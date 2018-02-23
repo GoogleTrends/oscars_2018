@@ -2,8 +2,6 @@
 	<div class='footer-social'>
 		<p class='footer-social__preach'>Share this study</p>
 		<div class='footer-social__icons'>
-			<div class='footer-social__icon fb-like' data-href='' data-layout='button_count' data-action='like' data-size='large' data-show-faces='true'
-			 data-share='false'></div>
 
 			<div class="footer-social__icon fb-share-button" data-size='large' data-href='' data-layout="button_count"></div>
 
@@ -12,7 +10,7 @@
 			</div>
 		</div>
 	</div>
-	<div id="fb-root"></div>
+
 	<div class='outro'>
 		<p class='outro__hed'>About</p>
 		{{#each copy.about}}
@@ -25,11 +23,12 @@
 	</div>
 </footer>
 
+<div id="fb-root"></div>
 <script>(function (d, s, id) {
 		var js, fjs = d.getElementsByTagName(s)[0];
 		if (d.getElementById(id)) return;
 		js = d.createElement(s); js.id = id;
-		js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.7";
+		js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.12';
 		fjs.parentNode.insertBefore(js, fjs);
 	}(document, 'script', 'facebook-jssdk'));</script>
 
