@@ -1,7 +1,7 @@
 // D3 is included by globally by default
 import * as topojson from 'topojson';
 
-const TEST = true
+const TEST = false;
 
 const $map = d3.select('#map');
 const $svg = $map.select('svg');
@@ -21,10 +21,10 @@ function setup() {
 		.translate([width / 2, height / 2]);
 
 	const path = d3.geoPath().projection(projection);
-	const prop = TEST ? 'countries' :'nat_earth_geojson'
+	const prop = TEST ? 'countries' : 'nat_earth_geojson';
 	const json = world.objects[prop];
 	const feature = topojson.feature(world, json);
-	console.log(feature)
+	console.log(feature);
 	$svg.append('path').at('d', path(feature));
 }
 
@@ -45,7 +45,7 @@ function resize() {
 
 function init() {
 	const path = 'assets/data';
-	const file = TEST ? 'world-110m' : 'nat_earth_topo'
+	const file = TEST ? 'world-110m' : 'nat_earth_topo_2';
 	d3.loadData(`${path}/${file}.json`, (err, results) => {
 		if (err) console.error(err);
 		world = results[0];
