@@ -16,12 +16,11 @@ let world = null;
 
 function setup() {
 	const projection = geoRobinson()
-		.scale(150)
-		.translate([width / 2, height / 2])
-		.precision(0.1);
+		// .scale(1)
+		.translate([width / 2, height / 2]);
 
 	const path = d3.geoPath().projection(projection);
-	const prop = TEST ? 'countries' : 'nat_earth_geojson';
+	const prop = TEST ? 'countries' : 'countries_geo_github';
 	const json = world.objects[prop];
 	const feature = topojson.feature(world, json);
 	console.log({ json, feature });
@@ -51,7 +50,7 @@ function resize() {
 
 function init() {
 	const path = 'assets/data';
-	const file = TEST ? 'world-110m' : 'nat_earth_topo_2';
+	const file = TEST ? 'world-110m' : 'github_geototopo_v1';
 	updateDimensions();
 
 	d3.loadData(`${path}/${file}.json`, (err, response) => {
