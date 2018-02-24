@@ -1,7 +1,8 @@
 // D3 is included by globally by default
 import * as topojson from 'topojson';
+import { geoRobinson } from 'd3-geo-projection';
 
-const TEST = true;
+const TEST = false;
 
 const $map = d3.select('#map');
 const $svg = $map.select('svg');
@@ -11,29 +12,26 @@ const BP = 800;
 let width = 0;
 let height = 0;
 let mobile = false;
-
 let world = null;
 
 function setup() {
-	const projection = d3
-		.geoMercator()
-		.scale(width / 2 / Math.PI)
-		.translate([width / 2, height / 2]);
+	const projection = geoRobinson()
+		.scale(150)
+		.translate([width / 2, height / 2])
+		.precision(0.1);
 
 	const path = d3.geoPath().projection(projection);
 	const prop = TEST ? 'countries' : 'nat_earth_geojson';
 	const json = world.objects[prop];
 	const feature = topojson.feature(world, json);
-	// console.log(feature);
+	console.log({ json, feature });
 
- 
-
-
-	// $g.selectAll('path')
-  //       .data(feature.features)
-  //       .enter()
-  //       .append('path')
-  //       .at('d', path);
+	$g
+		.selectAll('path')
+		.data(feature.features)
+		.enter()
+		.append('path')
+		.at('d', path);
 }
 
 function updateDimensions() {
@@ -54,15 +52,13 @@ function resize() {
 function init() {
 	const path = 'assets/data';
 	const file = TEST ? 'world-110m' : 'nat_earth_topo_2';
+	updateDimensions();
 
-	d3.json("assets/data/nat_earth_topo_2.json",function(error, topocountries){
-
-		console.log(topocountries);
-	})
-
-
-
-
+	d3.loadData(`${path}/${file}.json`, (err, response) => {
+		world = response[0];
+		setup();
+		resize();
+	});
 }
 
 export default { init, resize };
