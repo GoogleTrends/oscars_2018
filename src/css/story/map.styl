@@ -1,8 +1,33 @@
 #map
 	position relative
 	svg
-		background-color $gray-light
+		background-color $off-black
 		path
 			fill none
-			stroke $gray
+			stroke $gray-dark
 			stroke-width 0.5px
+	
+	.map__ui
+		max-width 20rem
+		margin 1rem auto
+		text-align center
+
+		.ui__label
+			text-align center
+		.slider
+			width 100%
+			display inline-block
+	
+	.map__key
+		max-width 50rem
+		margin 1rem auto
+		ul
+			display flex
+			flex-wrap wrap
+			justify-content flex-start
+		li
+			padding 0 0.5rem
+			margin-right 1rem
+			margin-bottom 0.5rem
+			set-type-size(small)
+			border-bottom 2px solid currentColor
