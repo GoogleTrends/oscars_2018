@@ -11,14 +11,22 @@ const $svg = $map.select('svg');
 const $g = $svg.select('g');
 
 const BP = 800;
+const SECOND = 1000;
+const EASE = d3.easeCubicInOut;
 let width = 0;
 let height = 0;
 let mobile = false;
 let worldData = null;
 let movieYearData = null;
 let movieMonthData = null;
+
+let projection = null;
+let path = null;
 let currentMonth = 1;
 const movieColors = {};
+let active = d3.select(null);
+
+const zoom = d3.zoom().scaleExtent([1, 5]);
 
 function getMovieColor({ properties }) {
 	const { name } = properties;
@@ -33,11 +41,63 @@ function update() {
 	$g.selectAll('.region').st('fill', getMovieColor);
 }
 
+function resetZoom() {
+	active.classed('is-active', false);
+	active = d3.select(null);
+
+	$g
+		.transition()
+		.duration(SECOND)
+		.ease(EASE)
+		.call(zoom.transform, d3.zoomIdentity);
+
+	// $svg
+	// 	.transition()
+	// 	.call(zoom.translate([width / 2, height / 2]).scale(1).event);
+}
+
 function handleSlider() {
 	currentMonth = +this.value;
 	const m = months[currentMonth - 1];
 	$uiLabel.text(`${m} 2017`);
 	update();
+}
+
+function handleZoom() {
+	const ratio = 1 / d3.event.transform.k * 0.5;
+
+	$g.at('transform', d3.event.transform);
+
+	$g.selectAll('.region').st('stroke-width', `${ratio}px`);
+}
+
+function handleRegionClick(d) {
+	if (active.node() === this) return resetZoom();
+	active.classed('active', false);
+	active = d3.select(this).classed('active', true);
+
+	const bounds = path.bounds(d);
+	const dx = bounds[1][0] - bounds[0][0];
+	const dy = bounds[1][1] - bounds[0][1];
+	const x = (bounds[0][0] + bounds[1][0]) / 2;
+	const y = (bounds[0][1] + bounds[1][1]) / 2;
+
+	const scale = Math.max(
+		1,
+		Math.min(8, 0.9 / Math.max(dx / width, dy / height))
+	);
+	const translateX = width / 2 - scale * x;
+	const translateY = height / 2 - scale * y;
+
+	const zoomTransform = d3.zoomIdentity
+		.translate(translateX, translateY)
+		.scale(scale);
+
+	$g
+		.transition()
+		.duration(SECOND)
+		.ease(EASE)
+		.call(zoom.transform, zoomTransform);
 }
 
 function createKey() {
@@ -63,11 +123,10 @@ function createKey() {
 }
 
 function setup() {
-	const projection = geoRobinson()
-		// .scale(1)
-		.translate([width / 2, height / 2]);
+	projection = geoRobinson().translate([width / 2, height / 2]);
+	// .scale(150);
+	path = d3.geoPath().projection(projection);
 
-	const path = d3.geoPath().projection(projection);
 	const json = worldData.objects.countries_geo_github;
 	const feature = topojson.feature(worldData, json);
 
@@ -77,9 +136,12 @@ function setup() {
 		.enter()
 		.append('path')
 		.at('d', path)
-		.at('class', d => `region ${d.id}`);
+		.at('class', d => `region ${d.id}`)
+		.on('click', handleRegionClick);
 
 	$map.select('.slider').on('input', handleSlider);
+
+	zoom.on('zoom', handleZoom);
 }
 
 function updateDimensions() {
@@ -95,6 +157,8 @@ function updateDimensions() {
 function resize() {
 	updateDimensions();
 	$svg.at({ width, height });
+	projection.translate([width / 2, height / 2]);
+	path = d3.geoPath().projection(projection);
 }
 
 function init({ world, year, month }) {
