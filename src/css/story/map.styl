@@ -1,26 +1,33 @@
 .map
 	position relative
 	svg
-		background-color $off-black
 		.region
 			fill none
-			stroke $gray-dark
+			stroke $off-white
 			stroke-width 0.5px
 			cursor pointer
 	
+	.map__intro
+		max-width 40rem
+		margin 0 auto
+		mark
+			background-color $gray-light
+			border-bottom 2px solid $gray-dark
+			padding 0 0.5em
 	.map__ui
 		max-width 20rem
-		margin 1rem auto
+		margin 0 auto
 		text-align center
 
 		.ui__label
 			text-align center
+			margin 0
 		.slider
 			width 100%
 			display inline-block
 	
 	.map__key
-		max-width 50rem
+		max-width 61rem
 		margin 1rem auto
 		ul
 			display flex
@@ -30,5 +37,30 @@
 			padding 0 0.5rem
 			margin-right 1rem
 			margin-bottom 0.5rem
-			set-type-size(small)
-			border-bottom 2px solid currentColor
+			set-type-size(x-small, true)
+			border 2px solid currentColor
+			border-radius 16px
+			cursor pointer
+			font-weight 500
+
+	.map__graphic
+		// display flex
+		position relative
+	
+	.graphic__chart
+		width 100%
+	.graphic__info
+		width 10rem
+		position absolute
+		top 50%
+		transform translateY(-50%)
+		left 0
+		padding 1rem
+		background-color rgba($off-white, 0.5)
+
+	.info__words
+		margin-top 0.5rem
+		li
+			text-align center
+			font-weight 600
+			color $gray-dark

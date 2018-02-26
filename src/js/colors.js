@@ -1,13 +1,15 @@
 export default {
-	default: '#efefef',
+	default: '#dedede',
+	all: '#4a4a4a',
 	categorical: [
-		'#F67088',
-		'#CE8F31',
-		'#96A331',
-		'#32B165',
-		'#35ACA4',
-		'#38A7D0',
-		'#A38CF4',
-		'#F461DD'
+		'#fff',
+		'#66c2a5',
+		'#fc8d62',
+		'#8da0cb',
+		'#e78ac3',
+		'#a6d854',
+		'#ffd92f',
+		'#e5c494',
+		'#b3b3b3'
 	]
 };

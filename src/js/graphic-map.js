@@ -5,10 +5,12 @@ import colors from './colors';
 import months from './months';
 import trailers from './trailers';
 
-const $map = d3.select('#month');
-const $uiLabel = $map.select('.ui__label');
+const $map = d3.select('#map');
+const $graphic = $map.select('.map__graphic');
+const $chart = $graphic.select('.graphic__chart');
 const $svg = $map.select('svg');
 const $g = $svg.select('g');
+const $uiLabel = $map.select('.ui__label');
 
 const BP = 800;
 const SECOND = 1000;
@@ -20,11 +22,13 @@ let worldData = null;
 let movieYearData = null;
 let movieMonthData = null;
 
+let worldFeature = null;
 let projection = null;
 let path = null;
-let currentMonth = 1;
-const movieColors = {};
+let currentMonth = 0;
 let active = d3.select(null);
+
+let colorDict = null;
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
@@ -34,7 +38,7 @@ function getMovieColor({ properties }) {
 	if (!country) return colors.default;
 
 	const m = country.values.find(d => d.month === currentMonth);
-	return movieColors[m.country_max];
+	return colorDict[m.max];
 }
 
 function update() {
@@ -44,6 +48,29 @@ function update() {
 function resetZoom() {
 	active.classed('is-active', false);
 	active = d3.select(null);
+
+	// const bounds = path.bounds($g);
+	// const dx = bounds[1][0] - bounds[0][0];
+	// const dy = bounds[1][1] - bounds[0][1];
+	// const x = (bounds[0][0] + bounds[1][0]) / 2;
+	// const y = (bounds[0][1] + bounds[1][1]) / 2;
+
+	// const scale = Math.max(
+	// 	1,
+	// 	Math.min(8, 0.9 / Math.max(dx / width, dy / height))
+	// );
+	// const translateX = width / 2 - scale * x;
+	// const translateY = height / 2 - scale * y;
+
+	// const zoomTransform = d3.zoomIdentity
+	// 	.translate(translateX, translateY)
+	// 	.scale(scale);
+
+	// $g
+	// 	.transition()
+	// 	.duration(SECOND)
+	// 	.ease(EASE)
+	// 	.call(zoom.transform, zoomTransform);
 
 	$g
 		.transition()
@@ -58,8 +85,9 @@ function resetZoom() {
 
 function handleSlider() {
 	currentMonth = +this.value;
-	const m = months[currentMonth - 1];
-	$uiLabel.text(`${m} 2017`);
+	const index = currentMonth - 1;
+	const str = index < 0 ? 'Last year' : `${months[index]} 2017`;
+	$uiLabel.text(str);
 	update();
 }
 
@@ -76,6 +104,7 @@ function handleRegionClick(d) {
 	active.classed('active', false);
 	active = d3.select(this).classed('active', true);
 
+	console.log(d);
 	const bounds = path.bounds(d);
 	const dx = bounds[1][0] - bounds[0][0];
 	const dy = bounds[1][1] - bounds[0][1];
@@ -100,39 +129,19 @@ function handleRegionClick(d) {
 		.call(zoom.transform, zoomTransform);
 }
 
-function createKey() {
-	const nested = d3
-		.nest()
-		.key(d => d.max)
-		.rollup(v => v.length)
-		.entries(movieYearData);
-
-	nested.sort((a, b) => d3.descending(a.value, b.value));
-
-	nested.forEach((d, i) => (movieColors[d.key] = colors.categorical[i]));
-
-	const movieColorsArr = Object.keys(movieColors);
-	$map
-		.select('.map__key ul')
-		.selectAll('li')
-		.data(movieColorsArr)
-		.enter()
-		.append('li')
-		.text(d => d)
-		.st('color', d => movieColors[d]);
-}
-
 function setup() {
-	projection = geoRobinson().translate([width / 2, height / 2]);
-	// .scale(150);
-	path = d3.geoPath().projection(projection);
-
 	const json = worldData.objects.countries_geo_github;
-	const feature = topojson.feature(worldData, json);
+	worldFeature = topojson.feature(worldData, json);
+
+	projection = geoRobinson()
+		.translate([width / 2, height / 2])
+		.fitSize([width, height], worldFeature);
+
+	path = d3.geoPath().projection(projection);
 
 	$g
 		.selectAll('.region')
-		.data(feature.features, d => d.id)
+		.data(worldFeature.features, d => d.id)
 		.enter()
 		.append('path')
 		.at('d', path)
@@ -142,33 +151,35 @@ function setup() {
 	$map.select('.slider').on('input', handleSlider);
 
 	zoom.on('zoom', handleZoom);
+
+	resetZoom();
 }
 
 function updateDimensions() {
-	width = $map.node().offsetWidth;
+	width = $chart.node().offsetWidth;
 
 	mobile = width < BP;
-	// const ratio = 1
-	// const h = w * ratio
-
-	height = window.innerHeight * 0.67;
+	const ratio = 2;
+	height = Math.floor(width / ratio);
 }
 
 function resize() {
 	updateDimensions();
 	$svg.at({ width, height });
-	projection.translate([width / 2, height / 2]);
+	projection
+		.translate([width / 2, height / 2])
+		.fitSize([width, height], worldFeature);
 	path = d3.geoPath().projection(projection);
 }
 
-function init({ world, year, month }) {
+function init({ world, year, month, movieColors }) {
 	updateDimensions();
 
+	colorDict = movieColors;
 	worldData = world;
 	movieYearData = year;
 	movieMonthData = month;
 
-	createKey();
 	setup();
 	resize();
 	update();
