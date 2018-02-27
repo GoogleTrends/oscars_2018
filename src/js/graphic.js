@@ -1,6 +1,7 @@
 import graphicMap from './graphic-map';
 import colors from './colors';
 
+let movieTitles = null;
 const movieColors = {};
 let wordData = null;
 
@@ -36,13 +37,15 @@ function handleKeyClick(datum, index) {
 }
 
 function createMovieColors(data) {
+	const top = data.map(d => d.values[0].max);
+
 	const nested = d3
 		.nest()
-		.key(d => d.max)
+		.key(d => d)
 		.rollup(v => v.length)
-		.entries(data);
+		.entries(top);
 
-	nested.sort((a, b) => d3.descending(a.value, b.value));
+	nested.sort((a, b) => d3.ascending(a.value, b.value));
 
 	nested.splice(0, 0, { key: 'All Films' });
 	nested.forEach((d, i) => (movieColors[d.key] = colors.categorical[i]));
@@ -74,18 +77,39 @@ function createKey() {
 }
 
 function cleanYear(data) {
-	return data.map(d => ({
-		...d,
-		max: d.max.includes('Three') ? 'Three Billboards' : d.max
-	}));
+	return data.map(d => {
+		const out = {};
+		const movieVals = movieTitles.map(c => ({
+			title: c,
+			value: +d[c]
+		}));
+		movieVals.forEach(m => {
+			out[m.title] = m.value;
+		});
+		movieVals.sort((a, b) => d3.ascending(a.value, b.value));
+		out.max = movieVals.pop().title;
+		out.country = d.country;
+		return out;
+	});
 }
 
 function cleanMonth(data) {
-	const clean = data.map(d => ({
-		...d,
-		month: +d.month,
-		max: d.country_max.includes('Three') ? 'Three Billboards' : d.country_max
-	}));
+	movieTitles = data.columns.filter(d => !['country', 'month'].includes(d));
+	const clean = data.map(d => {
+		const out = {};
+		const movieVals = movieTitles.map(c => ({
+			title: c,
+			value: +d[c]
+		}));
+		movieVals.forEach(m => {
+			out[m.title] = m.value;
+		});
+		movieVals.sort((a, b) => d3.ascending(a.value, b.value));
+		out.max = movieVals.pop().title;
+		out.country = d.country;
+		out.month = +d.month;
+		return out;
+	});
 
 	return d3
 		.nest()
@@ -111,19 +135,21 @@ function init() {
 	const path = 'assets/data';
 
 	d3.loadData(
-		`${path}/github_geototopo_v1.json`,
-		`${path}/movies_by_year.csv`,
+		// `${path}/github_geototopo_v1.json`,
+		`${path}/all_countries_topo.json`,
 		`${path}/movies_by_month.csv`,
+		`${path}/movies_by_year.csv`,
 		`${path}/words.csv`,
 		(err, response) => {
 			const world = response[0];
-			const year = cleanYear(response[1]);
-			const month = cleanMonth(response[2]);
+			const month = cleanMonth(response[1]);
+			const year = cleanYear(response[2]);
 			wordData = cleanWords(response[3]);
 
 			join({ year, month });
 
-			createMovieColors(year);
+			console.log(month);
+			createMovieColors(month);
 			createKey();
 			graphicMap.init({ world, month, movieColors });
 		}

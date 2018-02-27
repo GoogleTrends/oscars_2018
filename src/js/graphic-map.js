@@ -33,8 +33,8 @@ let colorDict = null;
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
 function getMovieColor({ properties }) {
-	const { name } = properties;
-	const country = movieMonthData.find(d => d.key === name);
+	const { NAME_0 } = properties;
+	const country = movieMonthData.find(d => d.key === NAME_0);
 	if (!country) return colors.default;
 
 	const m = country.values.find(d => d.month === currentMonth);
@@ -130,7 +130,7 @@ function handleRegionClick(d) {
 }
 
 function setup() {
-	const json = worldData.objects.countries_geo_github;
+	const json = worldData.objects.all_countries;
 	worldFeature = topojson.feature(worldData, json);
 
 	projection = geoRobinson()
