@@ -45,7 +45,7 @@ function createMovieColors(data) {
 		.rollup(v => v.length)
 		.entries(top);
 
-	nested.sort((a, b) => d3.ascending(a.value, b.value));
+	nested.sort((a, b) => d3.descending(a.value, b.value));
 
 	nested.splice(0, 0, { key: 'All Films' });
 	nested.forEach((d, i) => (movieColors[d.key] = colors.categorical[i]));
@@ -117,6 +117,21 @@ function cleanMonth(data) {
 		.entries(clean);
 }
 
+function cleanYearMax(data) {
+	return data.map(d => ({
+		...d,
+		max: d.max.includes('Three') ? 'Three Billboards' : d.max
+	}));
+}
+
+function cleanMonthMax(data) {
+	return data.map(d => ({
+		...d,
+		month: +d.month,
+		max: d.max.includes('Three') ? 'Three Billboards' : d.max
+	}));
+}
+
 function cleanWords(data) {
 	return d3
 		.nest()
@@ -124,10 +139,20 @@ function cleanWords(data) {
 		.entries(data);
 }
 
-function join({ year, month }) {
+function join({ year, month, monthMax, yearMax }) {
 	month.forEach(m => {
-		const match = year.find(y => y.country === m.key);
-		m.values.splice(0, 0, { month: 0, max: match.max });
+		// const match = year.find(y => y.country === m.key);
+
+		m.values.forEach(v => {
+			const monthMatch = monthMax.find(
+				y => y.country === m.key && y.month === v.month
+			);
+			v.max = monthMatch.max;
+		});
+
+		const yearMatch = yearMax.find(y => y.country === m.key);
+
+		m.values.splice(0, 0, { month: 0, max: yearMatch.max });
 	});
 }
 
@@ -137,18 +162,21 @@ function init() {
 	d3.loadData(
 		// `${path}/github_geototopo_v1.json`,
 		`${path}/all_countries_topo.json`,
+		`${path}/movies_by_month--max.csv`,
+		`${path}/movies_by_year--max.csv`,
 		`${path}/movies_by_month.csv`,
 		`${path}/movies_by_year.csv`,
 		`${path}/words.csv`,
 		(err, response) => {
 			const world = response[0];
-			const month = cleanMonth(response[1]);
-			const year = cleanYear(response[2]);
-			wordData = cleanWords(response[3]);
+			const monthMax = cleanMonthMax(response[1]);
+			const yearMax = cleanYearMax(response[2]);
+			const month = cleanMonth(response[3]);
+			const year = cleanYear(response[4]);
+			wordData = cleanWords(response[5]);
 
-			join({ year, month });
+			join({ year, month, monthMax, yearMax });
 
-			console.log(month);
 			createMovieColors(month);
 			createKey();
 			graphicMap.init({ world, month, movieColors });
