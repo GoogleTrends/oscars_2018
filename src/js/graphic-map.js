@@ -2,7 +2,6 @@
 import * as topojson from 'topojson';
 import { geoRobinson } from 'd3-geo-projection';
 import colors from './colors';
-import trailers from './trailers';
 
 const $map = d3.select('#map');
 const $graphic = $map.select('.map__graphic');

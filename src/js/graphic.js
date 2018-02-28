@@ -1,4 +1,5 @@
 import graphicMap from './graphic-map';
+import graphicVideo from './graphic-video';
 import colors from './colors';
 import months from './months';
 
@@ -14,9 +15,35 @@ const $graphic = $map.select('.map__graphic');
 const $info = $graphic.select('.graphic__info');
 const $wordList = $info.select('.info__words ul');
 const $control = $map.select('.ui__control');
+const $infoToggle = $info.select('.info__toggle');
 
 function resize() {
 	graphicMap.resize();
+}
+
+function updateWords(datum) {
+	const filtered = wordData.find(d => d.key === datum);
+
+	const $li = $wordList.selectAll('li').data(filtered.values.slice(0, 5));
+
+	const big = 20;
+	const $enter = $li.enter().append('li');
+
+	$enter.append('span');
+
+	$li
+		.merge($enter)
+		.select('span')
+		.text(d => d.word)
+		.st('font-size', (d, i) => big - i * 2)
+		.st('color', d3.color(movieColors[datum]).darker(0.5));
+}
+
+function handleInfoToggleClick() {
+	const hidden = $info.classed('is-hidden');
+	const t = hidden ? 'hide' : 'show details';
+	$infoToggle.select('p').text(t);
+	$info.classed('is-hidden', !hidden);
 }
 
 function handleControlClick() {
@@ -28,19 +55,10 @@ function handleControlClick() {
 
 function handleKeyClick(datum, index) {
 	graphicMap.changeMovie(datum);
+	graphicVideo.changeMovie(datum);
 	$keyList.selectAll('li').classed('is-selected', (d, i) => i === index);
 
-	const filtered = wordData.find(d => d.key === datum);
-
-	const $li = $wordList.selectAll('li').data(filtered.values);
-
-	const big = 20;
-	$li
-		.enter()
-		.append('li')
-		.merge($li)
-		.text(d => d.word)
-		.st('font-size', (d, i) => big - i);
+	updateWords(datum);
 }
 
 function handleTimelineClick(datum, index) {
@@ -225,7 +243,9 @@ function init() {
 			createKey();
 			createTimeline();
 			$control.on('click', handleControlClick);
+			$infoToggle.on('click', handleInfoToggleClick);
 			graphicMap.init({ world, month, movieColors });
+			graphicVideo.init();
 		}
 	);
 }

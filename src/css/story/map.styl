@@ -21,11 +21,11 @@
 		justify-content center
 		align-items flex-end
 		.ui__control
-			width 2rem
-			height 2rem
+			width 1.5rem
+			height 1.5rem
 			background-color $gray-light
 			position relative
-			margin-left 1rem
+			margin-left 1.5rem
 			border-radius 1rem
 			cursor pointer
 			span
@@ -97,7 +97,7 @@
 		ul
 			display flex
 			flex-wrap wrap
-			justify-content flex-start
+			justify-content center
 		li
 			position relative			
 			margin-right 1rem
@@ -132,17 +132,46 @@
 	.graphic__chart
 		width 100%
 	.graphic__info
-		width 10rem
+		width 272px
 		position absolute
-		top 50%
-		transform translateY(-50%)
+		top 0
 		left 0
 		padding 1rem
 		background-color rgba($off-white, 0.5)
-
+		transition transform 500ms ease-in-out
+		&.is-hidden
+			transform translateX(-272px)
+	
+	.info__toggle
+		position absolute
+		bottom 0
+		right 0
+		transform translateX(100%)
+		background-color rgba($off-white, 0.5)
+		cursor pointer
+		p
+			margin 0
+			text-transform uppercase
+			padding 0 0.5em
+			font-weight 500
+			color $gray-dark
+			text-shadow 0 0 3px #fff
 	.info__words
 		margin-top 0.5rem
+		p
+			margin 0
+			text-transform uppercase
+			text-align center
+			color $gray-dark
+			font-weight 500
+			text-shadow 0 0 3px #fff
 		li
 			text-align center
-			font-weight 600
-			color $gray-dark
+			margin 0.5rem 0
+			line-height 1
+		span
+			font-weight 500
+			box-shadow 0 0 1px 0px rgba($gray, 0.33), 0 3px 3px 1px rgba($gray, 0.33)
+			display inline-block
+			line-height 1
+			padding 0.25em 0.5em
