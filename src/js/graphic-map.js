@@ -17,7 +17,7 @@ let width = 0;
 let height = 0;
 let mobile = false;
 let worldData = null;
-let movieMonthData = null;
+let movieData = null;
 
 let worldFeature = null;
 let projection = null;
@@ -34,34 +34,30 @@ let maxZoom = 5;
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
-function getMovieFill({ properties }) {
+function getMovieFill({ data }) {
+	if (!data) return colors.default;
 	// heatmap
 	if (currentMovie) return colorDict[currentMovie];
 
 	// comparison
-	const { NAME_0 } = properties;
-	const country = movieMonthData.find(d => d.key === NAME_0);
-	if (!country) return colors.default;
-
-	const m = country.values.find(d => d.month === currentMonth);
-	return colorDict[m.max];
+	const m = data.find(d => d.month === currentMonth);
+	if (!m) return colors.default;
+	return m.max ? colorDict[m.max] : colors.default;
 }
 
-function getMovieOpacity({ properties }) {
+function getMovieOpacity({ data }) {
+	if (!data) return 0;
 	// comparison
 	if (!currentMovie) return 1;
 
 	// heatmap
-	const { NAME_0 } = properties;
-	const country = movieMonthData.find(d => d.key === NAME_0);
-	if (!country) return colors.default;
-
-	const m = country.values.find(d => d.month === currentMonth);
-	return scaleOpacity(m[currentMovie]);
+	const m = data.find(d => d.month === currentMonth);
+	if (!m) return 0;
+	return m[currentMovie] ? scaleOpacity(m[currentMovie]) : 0;
 }
 
 function updateScale() {
-	const vals = movieMonthData.map(d => d.values[currentMonth][currentMovie]);
+	const vals = movieData.map(d => d.values[currentMonth][currentMovie]);
 	scaleOpacity.domain([0, d3.max(vals)]);
 }
 
@@ -186,7 +182,11 @@ function setup() {
 
 	path = d3.geoPath().projection(projection);
 
-	// console.log(worldFeature.features);
+	worldFeature.features.forEach(f => {
+		const { NAME_0, NAME_1 } = f.properties;
+		const match = movieData.find(d => d.key === `${NAME_0}${NAME_1}`);
+		f.data = match ? match.values : null;
+	});
 	$g
 		.selectAll('.region')
 		.data(worldFeature.features, d => d.id)
@@ -242,13 +242,12 @@ function changeMovie(str) {
 	update();
 }
 
-function init({ world, month, movieColors }) {
+function init({ world, allData, movieColors }) {
 	updateDimensions();
 
 	colorDict = movieColors;
 	worldData = world;
-	movieMonthData = month;
-
+	movieData = allData;
 	setup();
 	resize();
 }

@@ -20,12 +20,16 @@ const $infoToggle = $info.select('.info__toggle');
 const $trailerTitle = $map.select('.info__words p span');
 
 let timer = null;
+let currentWordIndex = 0;
+let wordTimer = null;
 
 function resize() {
 	graphicMap.resize();
 }
 
 function updateWords(datum) {
+	graphicVideo.changeMovie(datum);
+	$trailerTitle.st('color', d3.color(movieColors[datum]).darker(0.5));
 	const filtered = wordData.find(d => d.key === datum);
 
 	const $li = $wordList.selectAll('li').data(filtered.values.slice(0, 5));
@@ -78,13 +82,20 @@ function handleControlClick() {
 	}
 }
 
+function shuffle() {
+	currentWordIndex += 1;
+	if (currentWordIndex >= movieTitles.length) currentWordIndex = 0;
+
+	updateWords(movieTitles[currentWordIndex]);
+	wordTimer = setTimeout(shuffle, SECOND * 5);
+}
+
 function handleKeyClick(datum, index) {
 	graphicMap.changeMovie(datum);
-	graphicVideo.changeMovie(datum);
 	$keyList.selectAll('li').classed('is-selected', (d, i) => i === index);
-	$trailerTitle.st('color', d3.color(movieColors[datum]).darker(0.5));
-	updateWords(datum);
-	$info.classed('is-visible', true);
+	clearTimeout(wordTimer);
+	if (datum !== 'All Films') updateWords(datum);
+	else shuffle();
 }
 
 function handleTimelineClick(datum, index) {
@@ -102,7 +113,7 @@ function handlePastClick() {
 }
 
 function createMovieColors(data) {
-	const top = data.map(d => d.values[0].max);
+	const top = data.map(d => d.values[0].max).filter(d => d);
 
 	const nested = d3
 		.nest()
@@ -113,10 +124,12 @@ function createMovieColors(data) {
 	nested.sort((a, b) => d3.descending(a.value, b.value));
 
 	nested.splice(0, 0, { key: 'All Films' });
+	nested.push({ key: 'The Post', value: 0 });
 	nested.forEach((d, i) => (movieColors[d.key] = colors.categorical[i]));
 }
 
 function createKey() {
+	// console.log(movieTitles, movieColors);
 	const data = Object.keys(movieColors);
 
 	const $li = $keyList
@@ -159,25 +172,24 @@ function createTimeline() {
 	$pastList.select('li').on('click', handlePastClick);
 }
 
-function cleanYear(data) {
-	return data.map(d => {
-		const out = {};
-		const movieVals = movieTitles.map(c => ({
-			title: c,
-			value: +d[c]
-		}));
-		movieVals.forEach(m => {
-			out[m.title] = m.value;
-		});
-		movieVals.sort((a, b) => d3.ascending(a.value, b.value));
-		out.max = movieVals.pop().title;
-		out.country = d.country;
-		return out;
-	});
+function cleanMax(str) {
+	if (str.includes('Three')) return 'Three Billboards';
+	else if (str === 'insufficient_data') return null;
+	return str;
 }
 
-function cleanMonth(data) {
-	movieTitles = data.columns.filter(d => !['country', 'month'].includes(d));
+function cleanWords(data) {
+	return d3
+		.nest()
+		.key(d => d.movie)
+		.entries(data);
+}
+
+function cleanData(data) {
+	// console.log(data);
+	movieTitles = data.columns.filter(
+		d => !['fullname', 'max', 'month'].includes(d)
+	);
 	const clean = data.map(d => {
 		const out = {};
 		const movieVals = movieTitles.map(c => ({
@@ -188,63 +200,16 @@ function cleanMonth(data) {
 			out[m.title] = m.value;
 		});
 		movieVals.sort((a, b) => d3.ascending(a.value, b.value));
-		out.max = movieVals.pop().title;
-		out.country = d.country;
+		out.fullname = d.fullname;
 		out.month = +d.month;
+		out.max = cleanMax(d.max);
 		return out;
 	});
 
 	return d3
 		.nest()
-		.key(d => d.country)
+		.key(d => d.fullname)
 		.entries(clean);
-}
-
-function cleanYearMax(data) {
-	return data.map(d => ({
-		...d,
-		max: d.max.includes('Three') ? 'Three Billboards' : d.max
-	}));
-}
-
-function cleanMonthMax(data) {
-	return data.map(d => ({
-		...d,
-		month: +d.month,
-		max: d.max.includes('Three') ? 'Three Billboards' : d.max
-	}));
-}
-
-function cleanWords(data) {
-	return d3
-		.nest()
-		.key(d => d.movie)
-		.entries(data);
-}
-
-function join({ year, month, monthMax, yearMax }) {
-	month.forEach(m => {
-		// const match = year.find(y => y.country === m.key);
-
-		m.values.forEach(v => {
-			const monthMatch = monthMax.find(
-				y => y.country === m.key && y.month === v.month
-			);
-			v.max = monthMatch.max;
-		});
-
-		const yearMatchMax = yearMax.find(y => y.country === m.key);
-
-		const yearMatch = year.find(y => y.country === m.key);
-
-		const yearObj = { month: 0, max: yearMatchMax.max };
-
-		movieTitles.forEach(t => {
-			yearObj[t] = yearMatch[t];
-		});
-
-		m.values.splice(0, 0, yearObj);
-	});
 }
 
 function init() {
@@ -252,28 +217,27 @@ function init() {
 
 	d3.loadData(
 		`${path}/all_countries_topo.json`,
-		`${path}/movies_by_month--max.csv`,
-		`${path}/movies_by_year--max.csv`,
-		`${path}/movies_by_month--all.csv`,
-		`${path}/movies_by_year--all.csv`,
+		`${path}/all_data.csv`,
+		// `${path}/movies_by_month--max.csv`,
+		// `${path}/movies_by_year--max.csv`,
+		// `${path}/movies_by_month--all.csv`,
+		// `${path}/movies_by_year--all.csv`,
 		`${path}/words.csv`,
 		(err, response) => {
 			const world = response[0];
-			const monthMax = cleanMonthMax(response[1]);
-			const yearMax = cleanYearMax(response[2]);
-			const month = cleanMonth(response[3]);
-			const year = cleanYear(response[4]);
-			wordData = cleanWords(response[5]);
 
-			join({ year, month, monthMax, yearMax });
+			const allData = cleanData(response[1]);
+			wordData = cleanWords(response[2]);
 
-			createMovieColors(month);
+			createMovieColors(allData);
 			createKey();
 			createTimeline();
 			$control.on('click', handleControlClick);
 			$infoToggle.on('click', handleInfoToggleClick);
-			graphicMap.init({ world, month, movieColors });
+			graphicMap.init({ world, allData, movieColors });
 			graphicVideo.init();
+			shuffle();
+			$info.classed('is-visible', true);
 		}
 	);
 }

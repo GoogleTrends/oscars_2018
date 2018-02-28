@@ -24,8 +24,8 @@
 		justify-content center
 		align-items flex-end
 		.ui__control
-			width 1.5rem
-			height 1.5rem
+			width 2rem
+			height 2rem
 			background-color $gray-light
 			position relative
 			margin-left 1.5rem
@@ -136,17 +136,27 @@
 	.graphic__chart
 		width 100%
 		position relative
+
+		.watermark
+			position absolute
+			display block
+			bottom 1rem
+			right 1rem
+			border none
+			width 10rem
+			img
+				width 100%
+
 		+mq('bp-4')
 			min-height 480px
 
 	.graphic__info
 		display none
-		width 20%
-		max-width 10rem
+		width 10rem
 		position absolute
 		top 50%
 		left 0
-		padding 1rem 0.5rem
+		padding 1rem 0.5rem 0.25rem 0.5rem
 		background-color rgba(#fff, 0.8)
 		transition transform 500ms ease-in-out
 		transform translateY(-50%)
@@ -177,6 +187,15 @@
 			text-shadow 0 0 3px #fff
 	.info__words
 		margin-top 0.5rem
+		.watermark
+			display block
+			text-align center
+			border none
+			width 6rem
+			margin 0 auto
+			margin-top 1.5rem
+			img
+				width 100%
 		p
 			margin 0
 			// text-transform uppercase
@@ -205,3 +224,4 @@
 		top 0
 		left 0
 		display none
+	
