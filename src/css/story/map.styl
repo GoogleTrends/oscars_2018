@@ -7,6 +7,10 @@
 			stroke-width 0.5px
 			stroke-opacity 0.25
 			cursor pointer
+			&.is-highlight
+				stroke $off-black
+				stroke-opacity 1
+				stroke-width 2px
 	
 	.map__intro, .map__outro
 		max-width 40rem
@@ -224,4 +228,18 @@
 		top 0
 		left 0
 		display none
+		pointer-events none
+		background-color rgba(white, 0.9)
+		border-radius 3px
+		box-shadow 0 0 3px 3px rgba($gray, 0.33)
+		padding 0.5rem
+		p
+			margin 0
+			set-type-size(small)
+			line-height 1.25
+			color $gray-dark
+			&:last-child
+				font-weight 600
+		&.is-visible
+			display block
 	

@@ -8,6 +8,7 @@ const $graphic = $map.select('.map__graphic');
 const $chart = $graphic.select('.graphic__chart');
 const $svg = $chart.select('svg');
 const $g = $svg.select('g');
+const $tooltip = $chart.select('.tooltip');
 
 const BP = 800;
 const SECOND = 1000;
@@ -31,6 +32,8 @@ let ready = false;
 
 let zoomedIn = false;
 let maxZoom = 5;
+
+let tooltipData = null;
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
@@ -69,6 +72,8 @@ function update() {
 		.st('fill', getMovieFill)
 		.st('fill-opacity', getMovieOpacity)
 		.at('d', path);
+
+	updateTipData();
 }
 
 function resetZoom() {
@@ -143,7 +148,6 @@ function handleRegionClick(d) {
 	active.classed('active', false);
 	active = d3.select(this).classed('active', true);
 
-	console.log(d);
 	const bounds = path.bounds(d);
 	const dx = bounds[1][0] - bounds[0][0];
 	const dy = bounds[1][1] - bounds[0][1];
@@ -168,8 +172,44 @@ function handleRegionClick(d) {
 		.call(zoom.transform, zoomTransform);
 }
 
+function updateTipData() {
+	if (tooltipData) {
+		const { data } = tooltipData;
+		const col = currentMovie || 'max';
+		const movie = data[currentMonth][col] || 'N/A';
+		$tooltip.select('.movie').text(movie);
+	}
+}
+
 function handleRegionEnter(d) {
-	console.log(d);
+	tooltipData = d;
+	$tooltip.classed('is-visible', true);
+	const { NAME_0, NAME_1 } = d.properties;
+	const { data } = d;
+	const name = `${NAME_1}, ${NAME_0}`;
+	const col = currentMovie || 'max';
+	const movie = data[currentMonth][col] || 'N/A';
+	$tooltip.select('.name').text(name);
+	$tooltip.select('.movie').text(movie);
+	d3
+		.select(this)
+		.classed('is-highlight', true)
+		.raise();
+}
+
+function handleRegionExit() {
+	tooltipData = null;
+	$tooltip.classed('is-visible', false);
+	d3.select(this).classed('is-highlight', false);
+}
+
+function handleMove() {
+	const [x, y] = d3.mouse(this);
+	const top = y < height / 2 ? y + 12 : 'auto';
+	const bottom = y >= height / 2 ? height - y + 12 : 'auto';
+	const left = x < width / 2 ? x + 12 : 'auto';
+	const right = x >= width / 2 ? width - x + 12 : 'auto';
+	$tooltip.st({ top, right, bottom, left });
 }
 
 function setup() {
@@ -193,11 +233,13 @@ function setup() {
 		.enter()
 		.append('path')
 
-		.at('class', d => `region ${d.id}`);
+		.at('class', d => `region ${d.id}`)
+		.on('mouseenter', handleRegionEnter)
+		.on('mouseout', handleRegionExit);
 	// .on('click', handleRegionClick)
-	// .on('mouseenter', handleRegionEnter);
 
-	$svg.on('click', handleMapClick);
+	$svg.on('click', handleMapClick).on('mousemove', handleMove);
+
 	ready = true;
 	zoom.on('zoom', handleZoom);
 
