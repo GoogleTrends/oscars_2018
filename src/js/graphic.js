@@ -1,5 +1,6 @@
 import graphicMap from './graphic-map';
 import colors from './colors';
+import months from './months';
 
 let movieTitles = null;
 const movieColors = {};
@@ -7,21 +8,27 @@ let wordData = null;
 
 const $map = d3.select('#map');
 const $keyList = $map.select('.map__key ul');
+const $timelineList = $map.select('.map__ui ul.timeline');
+const $pastList = $map.select('.map__ui ul.past');
 const $graphic = $map.select('.map__graphic');
-const $chart = $graphic.select('.graphic__chart');
 const $info = $graphic.select('.graphic__info');
 const $wordList = $info.select('.info__words ul');
+const $control = $map.select('.ui__control');
 
 function resize() {
 	graphicMap.resize();
 }
 
+function handleControlClick() {
+	const playing = $control.classed('is-playing');
+	$control.classed('is-playing', !playing);
+	$control.select('.play').classed('is-selected', playing);
+	$control.select('.pause').classed('is-selected', !playing);
+}
+
 function handleKeyClick(datum, index) {
-	$keyList.selectAll('li').st('background-color', (d, i) => {
-		const c = d3.color(movieColors[d]);
-		c.opacity = 0.5;
-		return i === index ? c.toString() : 'transparent';
-	});
+	graphicMap.changeMovie(datum);
+	$keyList.selectAll('li').classed('is-selected', (d, i) => i === index);
 
 	const filtered = wordData.find(d => d.key === datum);
 
@@ -34,6 +41,18 @@ function handleKeyClick(datum, index) {
 		.merge($li)
 		.text(d => d.word)
 		.st('font-size', (d, i) => big - i);
+}
+
+function handleTimelineClick(datum, index) {
+	$timelineList.selectAll('li').classed('is-selected', (d, i) => i === index);
+	$pastList.select('li').classed('is-selected', false);
+	graphicMap.changeMonth(index + 1);
+}
+
+function handlePastClick() {
+	$pastList.select('li').classed('is-selected', true);
+	$timelineList.selectAll('li').classed('is-selected', false);
+	graphicMap.changeMonth(0);
 }
 
 function createMovieColors(data) {
@@ -54,11 +73,20 @@ function createMovieColors(data) {
 function createKey() {
 	const data = Object.keys(movieColors);
 
-	$keyList
+	const $li = $keyList
 		.selectAll('li')
 		.data(data)
 		.enter()
-		.append('li')
+		.append('li');
+
+	$li.append('span.bg').st('background-color', (d, i) => {
+		const c = d3.color(movieColors[d]);
+		c.opacity = 0.5;
+		return c;
+	});
+
+	$li
+		.append('span.fg')
 		.text(d => d)
 		.st('color', (d, i) => {
 			const c = d3.color(movieColors[d]);
@@ -68,12 +96,21 @@ function createKey() {
 			'border-color',
 			(d, i) => (i === 0 ? colors.all : d3.color(movieColors[d]))
 		)
-		.st('background-color', d => {
-			const c = d3.color(movieColors[d]);
-			c.opacity = 0.33;
-			return c;
-		})
 		.on('click', handleKeyClick);
+}
+
+function createTimeline() {
+	const $li = $timelineList
+		.selectAll('li')
+		.data(months)
+		.enter()
+		.append('li')
+		.on('click', handleTimelineClick);
+
+	$li.append('p.label').text(d => d);
+	$li.append('span.rect');
+
+	$pastList.select('li').on('click', handlePastClick);
 }
 
 function cleanYear(data) {
@@ -150,9 +187,17 @@ function join({ year, month, monthMax, yearMax }) {
 			v.max = monthMatch.max;
 		});
 
-		const yearMatch = yearMax.find(y => y.country === m.key);
+		const yearMatchMax = yearMax.find(y => y.country === m.key);
 
-		m.values.splice(0, 0, { month: 0, max: yearMatch.max });
+		const yearMatch = year.find(y => y.country === m.key);
+
+		const yearObj = { month: 0, max: yearMatchMax.max };
+
+		movieTitles.forEach(t => {
+			yearObj[t] = yearMatch[t];
+		});
+
+		m.values.splice(0, 0, yearObj);
 	});
 }
 
@@ -160,12 +205,11 @@ function init() {
 	const path = 'assets/data';
 
 	d3.loadData(
-		// `${path}/github_geototopo_v1.json`,
 		`${path}/all_countries_topo.json`,
 		`${path}/movies_by_month--max.csv`,
 		`${path}/movies_by_year--max.csv`,
-		`${path}/movies_by_month.csv`,
-		`${path}/movies_by_year.csv`,
+		`${path}/movies_by_month--all.csv`,
+		`${path}/movies_by_year--all.csv`,
 		`${path}/words.csv`,
 		(err, response) => {
 			const world = response[0];
@@ -179,6 +223,8 @@ function init() {
 
 			createMovieColors(month);
 			createKey();
+			createTimeline();
+			$control.on('click', handleControlClick);
 			graphicMap.init({ world, month, movieColors });
 		}
 	);

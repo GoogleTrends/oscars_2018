@@ -6,10 +6,19 @@
 		<ul></ul>
 	</div>
 	<div class='map__ui'>
-		<input type='range' min='0' max='12' value='0' class='slider'>
-		<p class='ui__label'>
-			Last Year
-		</p>
+		<ul class='past'>
+			<li class='is-selected'>
+				<p class='label'>Past 12 months</p>
+				<span class='rect'></span>
+			</li>
+		</ul>
+		<ul class='timeline'>
+
+		</ul>
+		<div class='ui__control'>
+			<span class='play is-selected'>@@include('play.svg')</span>
+			<span class='pause'>@@include('pause.svg')</span>
+		</div>
 	</div>
 	<div class='map__graphic'>
 		<div class='graphic__chart'>

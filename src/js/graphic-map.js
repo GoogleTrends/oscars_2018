@@ -2,37 +2,41 @@
 import * as topojson from 'topojson';
 import { geoRobinson } from 'd3-geo-projection';
 import colors from './colors';
-import months from './months';
 import trailers from './trailers';
 
 const $map = d3.select('#map');
 const $graphic = $map.select('.map__graphic');
 const $chart = $graphic.select('.graphic__chart');
-const $svg = $map.select('svg');
+const $svg = $chart.select('svg');
 const $g = $svg.select('g');
-const $uiLabel = $map.select('.ui__label');
 
 const BP = 800;
 const SECOND = 1000;
 const EASE = d3.easeCubicInOut;
+const scaleOpacity = d3.scaleLinear();
 let width = 0;
 let height = 0;
 let mobile = false;
 let worldData = null;
-let movieYearData = null;
 let movieMonthData = null;
 
 let worldFeature = null;
 let projection = null;
 let path = null;
 let currentMonth = 0;
+let currentMovie = null;
 let active = d3.select(null);
 
 let colorDict = null;
+let ready = false;
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
-function getMovieColor({ properties }) {
+function getMovieFill({ properties }) {
+	// heatmap
+	if (currentMovie) return colorDict[currentMovie];
+
+	// comparison
 	const { NAME_0 } = properties;
 	const country = movieMonthData.find(d => d.key === NAME_0);
 	if (!country) return colors.default;
@@ -41,8 +45,35 @@ function getMovieColor({ properties }) {
 	return colorDict[m.max];
 }
 
+function getMovieOpacity({ properties }) {
+	// comparison
+	if (!currentMovie) return 1;
+
+	// heatmap
+	const { NAME_0 } = properties;
+	const country = movieMonthData.find(d => d.key === NAME_0);
+	if (!country) return colors.default;
+
+	const m = country.values.find(d => d.month === currentMonth);
+	return scaleOpacity(m[currentMovie]);
+}
+
+function updateScale() {
+	console.log(currentMonth, currentMovie);
+	console.log(movieMonthData);
+	const vals = movieMonthData.map(d => d.values[currentMonth][currentMovie]);
+	scaleOpacity.domain([0, d3.max(vals)]);
+}
+
 function update() {
-	$g.selectAll('.region').st('fill', getMovieColor);
+	// TODO update opacity scale
+	if (currentMovie) updateScale();
+	console.log(scaleOpacity.domain());
+	$g
+		.selectAll('.region')
+		.st('fill', getMovieFill)
+		.st('fill-opacity', getMovieOpacity)
+		.at('d', path);
 }
 
 function resetZoom() {
@@ -81,14 +112,6 @@ function resetZoom() {
 	// $svg
 	// 	.transition()
 	// 	.call(zoom.translate([width / 2, height / 2]).scale(1).event);
-}
-
-function handleSlider() {
-	currentMonth = +this.value;
-	const index = currentMonth - 1;
-	const str = index < 0 ? 'Last year' : `${months[index]} 2017`;
-	$uiLabel.text(str);
-	update();
 }
 
 function handleZoom() {
@@ -144,12 +167,11 @@ function setup() {
 		.data(worldFeature.features, d => d.id)
 		.enter()
 		.append('path')
-		.at('d', path)
+
 		.at('class', d => `region ${d.id}`)
 		.on('click', handleRegionClick);
 
-	$map.select('.slider').on('input', handleSlider);
-
+	ready = true;
 	zoom.on('zoom', handleZoom);
 
 	resetZoom();
@@ -170,19 +192,28 @@ function resize() {
 		.translate([width / 2, height / 2])
 		.fitSize([width, height], worldFeature);
 	path = d3.geoPath().projection(projection);
+	if (ready) update();
 }
 
-function init({ world, year, month, movieColors }) {
+function changeMonth(i) {
+	currentMonth = i;
+	update();
+}
+
+function changeMovie(str) {
+	currentMovie = str === 'All Films' ? null : str;
+	update();
+}
+
+function init({ world, month, movieColors }) {
 	updateDimensions();
 
 	colorDict = movieColors;
 	worldData = world;
-	movieYearData = year;
 	movieMonthData = month;
 
 	setup();
 	resize();
-	update();
 }
 
-export default { init, resize };
+export default { init, resize, changeMonth, changeMovie };
