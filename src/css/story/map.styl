@@ -8,10 +8,11 @@
 			stroke-opacity 0.25
 			cursor pointer
 	
-	.map__intro
+	.map__intro, .map__outro
 		max-width 40rem
 		margin 0 auto
 		padding 0 1rem
+
 		mark
 			background-color $gray-light
 			border-bottom 2px solid $gray-dark
@@ -132,6 +133,9 @@
 	.graphic__chart
 		width 100%
 		position relative
+		+mq('bp-4')
+			min-height 480px
+
 	.graphic__info
 		width 272px
 		position absolute

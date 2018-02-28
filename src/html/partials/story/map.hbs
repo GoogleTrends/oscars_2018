@@ -1,7 +1,9 @@
 <section id='map' class='map'>
-	<p class='map__intro small'>Text here that explains that Get Out was most
-		<mark>scary</mark> and this other movie was voted something else. Text here that explains that Shape of Water was most
-		<mark>beautiful</mark> and this other movie was voted something else.</p>
+	<div class='map__intro'>
+		{{#each copy.prelude}}
+		<p>{{{value}}}</p>
+		{{/each}}
+	</div>
 	<div class='map__key'>
 		<ul></ul>
 	</div>
@@ -50,7 +52,11 @@
 			</div>
 		</div>
 	</div>
-
+	<div class='map__outro'>
+		{{#each copy.outro}}
+		<p>{{{value}}}</p>
+		{{/each}}
+	</div>
 </section>
 
 {{!--
