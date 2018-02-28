@@ -10,8 +10,10 @@
 	
 	.map__intro, .map__outro
 		max-width 40rem
-		margin 0 auto
+		margin 2rem auto
 		padding 0 1rem
+		p 
+			set-type-size(root)
 
 		mark
 			background-color $gray-light
@@ -45,6 +47,7 @@
 				width 100%
 				height 100%
 				stroke $gray-dark
+				fill $gray-dark
 
 			.feather-play
 				transform translateX(12.5%)
@@ -183,6 +186,7 @@
 			span
 				display block
 				font-weight 600
+				set-type-size(small, false)
 		li
 			text-align center
 			margin 0.75rem 0
