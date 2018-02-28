@@ -34,6 +34,7 @@ let zoomedIn = false;
 let maxZoom = 5;
 
 let tooltipData = null;
+const showTip = !d3.select('body').classed('is-mobile');
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
@@ -183,7 +184,7 @@ function updateTipData() {
 
 function handleRegionEnter(d) {
 	tooltipData = d;
-	$tooltip.classed('is-visible', true);
+	$tooltip.classed('is-visible', showTip);
 	const { NAME_0, NAME_1 } = d.properties;
 	const { data } = d;
 	const name = `${NAME_1}, ${NAME_0}`;
