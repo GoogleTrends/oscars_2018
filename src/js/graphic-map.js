@@ -29,6 +29,9 @@ let active = d3.select(null);
 let colorDict = null;
 let ready = false;
 
+let zoomedIn = false;
+let maxZoom = 5;
+
 const zoom = d3.zoom().scaleExtent([1, 5]);
 
 function getMovieFill({ properties }) {
@@ -58,8 +61,6 @@ function getMovieOpacity({ properties }) {
 }
 
 function updateScale() {
-	console.log(currentMonth, currentMovie);
-	console.log(movieMonthData);
 	const vals = movieMonthData.map(d => d.values[currentMonth][currentMovie]);
 	scaleOpacity.domain([0, d3.max(vals)]);
 }
@@ -67,7 +68,6 @@ function updateScale() {
 function update() {
 	// TODO update opacity scale
 	if (currentMovie) updateScale();
-	console.log(scaleOpacity.domain());
 	$g
 		.selectAll('.region')
 		.st('fill', getMovieFill)
@@ -121,6 +121,27 @@ function handleZoom() {
 	$g.selectAll('.region').st('stroke-width', `${ratio}px`);
 }
 
+function handleMapClick() {
+	const [x, y] = d3.mouse(this);
+	zoomedIn = !zoomedIn;
+	if (zoomedIn) resetZoom();
+	else {
+		const scale = maxZoom;
+		const translateX = width / 2 - scale * x;
+		const translateY = height / 2 - scale * y;
+
+		const zoomTransform = d3.zoomIdentity
+			.translate(translateX, translateY)
+			.scale(scale);
+
+		$g
+			.transition()
+			.duration(SECOND)
+			.ease(EASE)
+			.call(zoom.transform, zoomTransform);
+	}
+}
+
 function handleRegionClick(d) {
 	if (active.node() === this) return resetZoom();
 	active.classed('active', false);
@@ -165,17 +186,18 @@ function setup() {
 
 	path = d3.geoPath().projection(projection);
 
-	console.log(worldFeature.features);
+	// console.log(worldFeature.features);
 	$g
 		.selectAll('.region')
 		.data(worldFeature.features, d => d.id)
 		.enter()
 		.append('path')
 
-		.at('class', d => `region ${d.id}`)
-		.on('click', handleRegionClick)
-		.on('mouseenter', handleRegionEnter);
+		.at('class', d => `region ${d.id}`);
+	// .on('click', handleRegionClick)
+	// .on('mouseenter', handleRegionEnter);
 
+	$svg.on('click', handleMapClick);
 	ready = true;
 	zoom.on('zoom', handleZoom);
 
@@ -198,6 +220,7 @@ function resize() {
 		.translate([width / 2, height / 2])
 		.fitSize([width, height], worldFeature);
 	path = d3.geoPath().projection(projection);
+	maxZoom = 6;
 	if (ready) update();
 }
 

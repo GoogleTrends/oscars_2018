@@ -84,6 +84,7 @@ function handleKeyClick(datum, index) {
 	$keyList.selectAll('li').classed('is-selected', (d, i) => i === index);
 	$trailerTitle.st('color', d3.color(movieColors[datum]).darker(0.5));
 	updateWords(datum);
+	$info.classed('is-visible', true);
 }
 
 function handleTimelineClick(datum, index) {

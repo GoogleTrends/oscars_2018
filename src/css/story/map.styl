@@ -140,7 +140,7 @@
 			min-height 480px
 
 	.graphic__info
-		// width 272px
+		display none
 		width 20%
 		max-width 10rem
 		position absolute
@@ -151,6 +151,8 @@
 		transition transform 500ms ease-in-out
 		transform translateY(-50%)
 		box-shadow 0 0 3px 3px rgba($gray, 0.25)
+		&.is-visible
+			display block
 		&.is-hidden
 			transform translate(-100%, -50%)
 	
