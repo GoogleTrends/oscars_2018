@@ -3,8 +3,9 @@ import graphicVideo from './graphic-video';
 import colors from './colors';
 import months from './months';
 
-let movieTitles = null;
+const SECOND = 1000;
 const movieColors = {};
+let movieTitles = null;
 let wordData = null;
 
 const $map = d3.select('#map');
@@ -16,6 +17,8 @@ const $info = $graphic.select('.graphic__info');
 const $wordList = $info.select('.info__words ul');
 const $control = $map.select('.ui__control');
 const $infoToggle = $info.select('.info__toggle');
+
+let timer = null;
 
 function resize() {
 	graphicMap.resize();
@@ -46,11 +49,32 @@ function handleInfoToggleClick() {
 	$info.classed('is-hidden', !hidden);
 }
 
+function animate() {
+	graphicMap.changeMonth();
+	const m = graphicMap.getMonth() - 1;
+	$timelineList.selectAll('li').classed('is-selected', (d, i) => i === m);
+	timer = setTimeout(animate, SECOND);
+}
+
 function handleControlClick() {
 	const playing = $control.classed('is-playing');
 	$control.classed('is-playing', !playing);
 	$control.select('.play').classed('is-selected', playing);
 	$control.select('.pause').classed('is-selected', !playing);
+
+	if (playing) {
+		if (timer) clearTimeout(timer);
+	} else {
+		// if on 2017, set to jan
+		$pastList.select('li').classed('is-selected', false);
+		if (timer) clearTimeout(timer);
+		if (graphicMap.getMonth() === 0) {
+			graphicMap.changeMonth(1);
+			$timelineList.selectAll('li').classed('is-selected', (d, i) => i === 0);
+		}
+
+		timer = setTimeout(animate, SECOND);
+	}
 }
 
 function handleKeyClick(datum, index) {
@@ -71,6 +95,8 @@ function handlePastClick() {
 	$pastList.select('li').classed('is-selected', true);
 	$timelineList.selectAll('li').classed('is-selected', false);
 	graphicMap.changeMonth(0);
+	if (timer) clearTimeout(timer);
+	timer = null;
 }
 
 function createMovieColors(data) {

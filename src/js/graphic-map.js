@@ -151,6 +151,10 @@ function handleRegionClick(d) {
 		.call(zoom.transform, zoomTransform);
 }
 
+function handleRegionEnter(d) {
+	console.log(d);
+}
+
 function setup() {
 	const json = worldData.objects.all_countries;
 	worldFeature = topojson.feature(worldData, json);
@@ -161,6 +165,7 @@ function setup() {
 
 	path = d3.geoPath().projection(projection);
 
+	console.log(worldFeature.features);
 	$g
 		.selectAll('.region')
 		.data(worldFeature.features, d => d.id)
@@ -168,7 +173,8 @@ function setup() {
 		.append('path')
 
 		.at('class', d => `region ${d.id}`)
-		.on('click', handleRegionClick);
+		.on('click', handleRegionClick)
+		.on('mouseenter', handleRegionEnter);
 
 	ready = true;
 	zoom.on('zoom', handleZoom);
@@ -177,7 +183,7 @@ function setup() {
 }
 
 function updateDimensions() {
-	width = $chart.node().offsetWidth;
+	width = $graphic.node().offsetWidth;
 
 	mobile = width < BP;
 	const ratio = 2;
@@ -187,6 +193,7 @@ function updateDimensions() {
 function resize() {
 	updateDimensions();
 	$svg.at({ width, height });
+	$chart.at({ width, height });
 	projection
 		.translate([width / 2, height / 2])
 		.fitSize([width, height], worldFeature);
@@ -195,8 +202,16 @@ function resize() {
 }
 
 function changeMonth(i) {
-	currentMonth = i;
+	if (isNaN(i)) {
+		currentMonth += 1;
+		currentMonth = currentMonth > 12 ? 1 : currentMonth;
+	} else currentMonth = i;
+
 	update();
+}
+
+function getMonth() {
+	return currentMonth;
 }
 
 function changeMovie(str) {
@@ -215,4 +230,4 @@ function init({ world, month, movieColors }) {
 	resize();
 }
 
-export default { init, resize, changeMonth, changeMovie };
+export default { init, resize, changeMonth, changeMovie, getMonth };

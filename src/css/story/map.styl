@@ -131,6 +131,7 @@
 	
 	.graphic__chart
 		width 100%
+		position relative
 	.graphic__info
 		width 272px
 		position absolute
@@ -142,6 +143,10 @@
 		&.is-hidden
 			transform translateX(-272px)
 	
+	.info__trailer
+		background-color $off-black
+		iframe 
+			display block
 	.info__toggle
 		position absolute
 		bottom 0
@@ -175,3 +180,8 @@
 			display inline-block
 			line-height 1
 			padding 0.25em 0.5em
+
+	.tooltip
+		position absolute
+		top 0
+		left 0
