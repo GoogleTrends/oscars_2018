@@ -137,15 +137,19 @@
 			min-height 480px
 
 	.graphic__info
-		width 272px
+		// width 272px
+		width 20%
+		max-width 12rem
 		position absolute
-		top 0
+		top 50%
 		left 0
-		padding 1rem
-		background-color rgba($off-white, 0.5)
+		padding 1rem 0.5rem
+		background-color rgba(#fff, 0.8)
 		transition transform 500ms ease-in-out
+		transform translateY(-50%)
+		box-shadow 0 0 3px 3px rgba($gray, 0.25)
 		&.is-hidden
-			transform translateX(-272px)
+			transform translate(-100%, -50%)
 	
 	.info__trailer
 		background-color $off-black
@@ -155,8 +159,9 @@
 		position absolute
 		bottom 0
 		right 0
-		transform translateX(100%)
-		background-color rgba($off-white, 0.5)
+		transform translate(100%, 0px)
+		background-color rgba(#fff, 1)
+		box-shadow 3px 0 1.5px 1.5px rgba($gray, 0.125), 3px 3px 0px 0px rgba($gray, 0.125)
 		cursor pointer
 		p
 			margin 0
@@ -169,23 +174,28 @@
 		margin-top 0.5rem
 		p
 			margin 0
-			text-transform uppercase
+			// text-transform uppercase
 			text-align center
 			color $gray-dark
 			font-weight 500
 			text-shadow 0 0 3px #fff
+			line-height 1.25
+			span
+				display block
+				font-weight 600
 		li
 			text-align center
-			margin 0.5rem 0
+			margin 0.75rem 0
 			line-height 1
-		span
-			font-weight 500
-			box-shadow 0 0 1px 0px rgba($gray, 0.33), 0 3px 3px 1px rgba($gray, 0.33)
-			display inline-block
-			line-height 1
-			padding 0.25em 0.5em
+			span
+				font-weight 500
+				box-shadow 0 0 1px 0px rgba($gray, 0.33), 0 3px 3px 1px rgba($gray, 0.33)
+				display inline-block
+				line-height 1
+				padding 0.25em 0.5em
 
 	.tooltip
 		position absolute
 		top 0
 		left 0
+		display none

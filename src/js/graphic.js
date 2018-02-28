@@ -17,6 +17,7 @@ const $info = $graphic.select('.graphic__info');
 const $wordList = $info.select('.info__words ul');
 const $control = $map.select('.ui__control');
 const $infoToggle = $info.select('.info__toggle');
+const $trailerTitle = $map.select('.info__words p span');
 
 let timer = null;
 
@@ -81,7 +82,7 @@ function handleKeyClick(datum, index) {
 	graphicMap.changeMovie(datum);
 	graphicVideo.changeMovie(datum);
 	$keyList.selectAll('li').classed('is-selected', (d, i) => i === index);
-
+	$trailerTitle.st('color', d3.color(movieColors[datum]).darker(0.5));
 	updateWords(datum);
 }
 
