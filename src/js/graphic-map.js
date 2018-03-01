@@ -13,7 +13,7 @@ const $tooltip = $chart.select('.tooltip');
 const BP = 800;
 const SECOND = 1000;
 const EASE = d3.easeCubicInOut;
-const scaleOpacity = d3.scaleLinear();
+const scaleOpacity = d3.scaleLinear().range([0.1, 1]);
 let width = 0;
 let height = 0;
 let mobile = false;
@@ -37,6 +37,8 @@ let tooltipData = null;
 const showTip = !d3.select('body').classed('is-mobile');
 
 const zoom = d3.zoom().scaleExtent([1, 5]);
+
+const RECT_SIZE = 10;
 
 function getMovieFill({ data }) {
 	if (!data) return colors.default;
@@ -265,6 +267,10 @@ function resize() {
 	path = d3.geoPath().projection(projection);
 	maxZoom = 6;
 	if (ready) update();
+
+	$svg
+		.select('.key')
+		.at('transform', `translate(${width - 56}, ${height * 0.33})`);
 }
 
 function changeMonth(i) {
@@ -283,8 +289,58 @@ function getMonth() {
 function changeMovie(str) {
 	currentMovie = str === 'All Films' ? null : str;
 	update();
+
+	if (currentMovie) {
+		$svg
+			.select('.key')
+			.selectAll('rect')
+			.st('fill', colorDict[currentMovie])
+			.st('fill-opacity', d => {
+				const max = scaleOpacity.domain()[1];
+				return scaleOpacity(max * (1 - d));
+			});
+	}
+	$svg.select('.key').classed('is-visible', !!currentMovie);
 }
 
+function createKey() {
+	const $key = $svg.append('g.key');
+	const data = d3.range(5).map(d => d / 4);
+	$key
+		.append('text.search')
+		.text('Search')
+		.at('text-anchor', 'middle')
+		.at('y', 0);
+	$key
+		.append('text.popularity')
+		.text('Popularity')
+		.at('text-anchor', 'middle')
+		.at('y', 14);
+	$key
+		.append('text.more')
+		.text('More')
+		.at('text-anchor', 'start')
+		.at('y', 40)
+		.at('x', RECT_SIZE + 4);
+	$key
+		.append('text.less')
+		.text('Less')
+		.at('text-anchor', 'start')
+		.at('y', RECT_SIZE * data.length + 28)
+		.at('x', RECT_SIZE + 4);
+	$key
+		.selectAll('rect')
+		.data(data)
+		.enter()
+		.append('rect')
+		.at({
+			x: 0,
+			y: 0,
+			width: RECT_SIZE,
+			height: RECT_SIZE
+		})
+		.at('transform', (d, i) => `translate(0, ${28 + i * RECT_SIZE})`);
+}
 function init({ world, allData, movieColors }) {
 	updateDimensions();
 
@@ -292,6 +348,7 @@ function init({ world, allData, movieColors }) {
 	worldData = world;
 	movieData = allData;
 	setup();
+	createKey();
 	resize();
 }
 

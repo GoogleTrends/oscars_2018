@@ -238,6 +238,7 @@ function init() {
 			graphicVideo.init();
 			shuffle();
 			$info.classed('is-visible', true);
+			$map.classed('is-visible', true);
 		}
 	);
 }

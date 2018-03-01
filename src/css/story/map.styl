@@ -1,5 +1,15 @@
+.map__intro, .map__outro
+	max-width 40rem
+	margin 2rem auto
+	padding 0 1rem
+	p 
+		set-type-size(root)
+		
 .map
 	position relative
+	opacity 0
+	&.is-visible
+		opacity 1
 	svg
 		.region
 			fill none
@@ -11,13 +21,6 @@
 				stroke $off-black
 				stroke-opacity 1
 				stroke-width 2px
-	
-	.map__intro, .map__outro
-		max-width 40rem
-		margin 2rem auto
-		padding 0 1rem
-		p 
-			set-type-size(root)
 
 		mark
 			background-color $gray-light
@@ -136,7 +139,8 @@
 	.map__graphic
 		// display flex
 		position relative
-	
+		min-height 400px
+
 	.graphic__chart
 		width 100%
 		position relative
@@ -144,10 +148,13 @@
 		.watermark
 			position absolute
 			display block
-			bottom 1rem
+			bottom 0
 			right 1rem
 			border none
 			width 10rem
+			transform translateY(100%)
+			+mq('bp-3')
+				transform translateY(0)
 			img
 				width 100%
 
@@ -243,3 +250,16 @@
 		&.is-visible
 			display block
 	
+	.key
+		opacity 0
+		&.is-visible
+			opacity 0
+			+mq('bp-3')
+				opacity 1
+		text
+			color $gray-dark
+			font-size 12px
+			font-family 'Roboto', sans-serif
+			font-weight 500
+		.less, .more
+			font-weight 400
