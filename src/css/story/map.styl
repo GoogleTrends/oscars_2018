@@ -31,7 +31,7 @@
 		justify-content center
 		flex-direction column
 		align-items center
-		+mq('bp-3')
+		+mq('bp-2')
 			flex-direction row
 			align-items flex-end
 		.ui__control
@@ -43,7 +43,7 @@
 			cursor pointer
 			order 0
 			margin-bottom 0.5rem
-			+mq('bp-3')
+			+mq('bp-2')
 				order 2
 				margin-left 1.5rem
 				margin-bottom 0
@@ -162,22 +162,20 @@
 	.graphic__chart
 		width 100%
 		position relative
-
-		.watermark
-			position absolute
-			display block
-			bottom 0
-			right 1rem
-			border none
-			width 10rem
-			transform translateY(100%)
-			+mq('bp-3')
-				transform translateY(0)
-			img
-				width 100%
-
 		+mq('bp-4')
 			min-height 480px
+
+	.watermark-lab
+		position absolute
+		display block
+		bottom 0
+		right 1rem
+		border none
+		width 10rem
+		img
+			width 100%
+
+	
 
 	.graphic__info
 		display none
@@ -193,7 +191,6 @@
 		
 		&.is-visible
 			display block
-			display none
 		&.is-hidden
 			transform translate(-100%, -50%)
 	
