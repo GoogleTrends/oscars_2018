@@ -213,6 +213,10 @@ function cleanData(data) {
 }
 
 function init() {
+	const w = d3.select('main').node().offsetWidth;
+	const mob = w < 640;
+	$info.classed('is-hidden', mob);
+	$infoToggle.select('p').text(mob ? 'Show details' : 'Hide');
 	const path = 'assets/data';
 
 	d3.loadData(

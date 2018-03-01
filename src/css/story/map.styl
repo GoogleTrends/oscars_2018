@@ -29,15 +29,24 @@
 	.map__ui
 		display flex
 		justify-content center
-		align-items flex-end
+		flex-direction column
+		align-items center
+		+mq('bp-3')
+			flex-direction row
+			align-items flex-end
 		.ui__control
 			width 2rem
 			height 2rem
 			background-color $gray-light
 			position relative
-			margin-left 1.5rem
 			border-radius 1rem
 			cursor pointer
+			order 0
+			margin-bottom 0.5rem
+			+mq('bp-3')
+				order 2
+				margin-left 1.5rem
+				margin-bottom 0
 			span
 				position absolute
 				display block
@@ -63,20 +72,27 @@
 			display flex
 			width 5rem
 			justify-content space-around
-			
+			order 2
+			margin-top 0.5rem
+			+mq('bp-3')
+				order 0
+				margin-top 0
 		
 		ul.timeline
 			display flex
 			width auto
 			justify-content space-around
+			order 1
 		
 		li
 			width auto
 			text-align center
-			margin 0 0.25em
+			margin 0 0.125em
 			line-height 1
 			cursor pointer
 			user-select none
+			+mq('bp-3')
+				margin 0 0.25em
 
 		.rect
 			display inline-block
@@ -108,7 +124,9 @@
 		ul
 			display flex
 			flex-wrap wrap
-			justify-content center
+			+mq('bp-4')
+				justify-content center
+
 		li
 			position relative			
 			margin-right 1rem
@@ -248,7 +266,8 @@
 			&:last-child
 				font-weight 600
 		&.is-visible
-			display block
+			+mq('bp-3')
+				display block
 	
 	.key
 		opacity 0

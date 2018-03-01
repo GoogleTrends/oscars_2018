@@ -180,7 +180,8 @@ function updateTipData() {
 		const { data } = tooltipData;
 		const col = currentMovie || 'max';
 		const movie = data[currentMonth][col] || 'N/A';
-		$tooltip.select('.movie').text(movie);
+		const display = currentMovie || movie;
+		$tooltip.select('.movie').text(display);
 	}
 }
 
@@ -192,8 +193,9 @@ function handleRegionEnter(d) {
 	const name = `${NAME_1}, ${NAME_0}`;
 	const col = currentMovie || 'max';
 	const movie = data[currentMonth][col] || 'N/A';
+	const display = currentMovie || movie;
 	$tooltip.select('.name').text(name);
-	$tooltip.select('.movie').text(movie);
+	$tooltip.select('.movie').text(display);
 	d3
 		.select(this)
 		.classed('is-highlight', true)
